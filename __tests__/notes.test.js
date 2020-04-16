@@ -1,52 +1,37 @@
-const { getAgent, getUser, getNote } = require('../db/data-helpers');
+const { getUser, getPost, getComment, getAgent } = require('../db/data-helpers');
 
-describe('notes routes', () => {
-  it('creates a note', async() => {
-    const user = await getUser({ email: 'test@test.com' });
+describe('Comment routes', () => {
+  it('creates a comment', async() => {
+    const user = await getUser({ username: 'testUser' });
+    const post = await getPost({ user: user._id });
 
     return getAgent()
-      .post('/api/v1/notes')
+      .post('/comments')
       .send({
-        title: 'my title',
-        body: 'my body'
+        commentBy: user._id,
+        post: post._id,
+        comment: 'test comment'
       })
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.any(String),
-          title: 'my title',
-          body: 'my body',
-          author: user._id,
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
+          commentBy: user._id.toString(),
+          post: post._id.toString(),
+          comment: 'test comment',
           __v: 0
         });
       });
   });
 
-  it('updates a note', async() => {
-    const user = await getUser({ email: 'test@test.com' });
-    const note = await getNote({ author: user._id });
+  it('deletes a comment', async() => {
+    const user = await getUser({ username: 'testUser' });
+    const comment = await getComment({ commentBy: user._id });
 
     return getAgent()
-      .patch(`/api/v1/notes/${note._id}`)
-      .send({ title: 'My cool note' })
+      .delete(`/comments/${comment._id}`)
       .then(res => {
-        expect(res.body).toEqual({
-          ...note,
-          updatedAt: expect.any(String),
-          title: 'My cool note'
-        });
+        expect(res.body).toEqual(comment);
       });
   });
 
-  it('deletes a note', async() => {
-    const user = await getUser({ email: 'test@test.com' });
-    const note = await getNote({ author: user._id });
-
-    return getAgent()
-      .delete(`/api/v1/notes/${note._id}`)
-      .then(res => {
-        expect(res.body).toEqual(note);
-      });
-  });
 });
