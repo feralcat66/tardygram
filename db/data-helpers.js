@@ -5,7 +5,7 @@ const seed = require('./seed');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const request = require('supertest');
-const app = require('../lib/app');
+const app = require('../lib/app.js');
 
 beforeAll(() => {
   connect();
