@@ -1,26 +1,41 @@
-const chance = require('chance').Chance();
 const User = require('../lib/models/User');
-const Note = require('../lib/models/Note');
-const Post = require('../lib/models/Comment');
+const Post = require('../lib/models/Post');
+const Comment = require('../lib/models/Comment');
+const chance = require('chance').Chance();
 
-module.exports = async({ usersToCreate = 5, notesToCreate = 30, postsToCreate = 50 } = {}) => {
-  const loggedInUser = await User.create({
-    username: 'test@test.com',
-    password: 'password',
-    profilePhotoUrl: 'url.com'
+module.exports = async({ 
+  usersToCreate = 15, 
+  postsToCreate = 30, 
+  commentsToCreate = 60 
+} = {}) => {
+  
+  // Add authorized user and related objects for testing
+  const authUser = await User.create({
+    username: 'testUser',
+    password: 'testPass',
+    profilePhotoUrl: 'testUrl.jpg'
   });
 
-  const loggedInPost = await Post.create({
-    user: 'test@test.com',
-    photoUrl: 'password',
-    caption: 'url.com',
+  const authPost = await Post.create({
+    user: authUser._id,
+    photoUrl: chance.url(),
+    caption: chance.sentence(),
     tags: [chance.word(), chance.word()]
   });
 
-  const users = await User.create([...Array(usersToCreate)].slice(1).map(() => ({
-    username: chance.email(),
-    password: chance.animal(),
-    profilePhotoUrl: chance.url()
+  await Comment.create({
+    commentBy: authUser._id,
+    post: authPost._id,
+    comment: chance.sentence()
+  });
+
+  
+  // Add randomized users and data for larger database
+
+  const users = await User.create([...Array(usersToCreate)].map(() => ({
+    username: chance.name(),
+    password: chance.word(),
+    profilePhotoUrl: chance.url() + '/test.jpg'
   })));
 
   const posts = await Post.create([...Array(postsToCreate)].map(() => ({
@@ -30,9 +45,10 @@ module.exports = async({ usersToCreate = 5, notesToCreate = 30, postsToCreate = 
     tags: [chance.word(), chance.word()]
   })));
 
-  await Note.create([...Array(notesToCreate)].map(() => ({
-    commentBy: loggedInUser._id,
-    post: loggedInPost._id,
+  await Comment.create([...Array(commentsToCreate)].map(() => ({
+    commentBy: chance.pickone(users)._id,
+    post: chance.pickone(posts)._id,
     comment: chance.sentence()
   })));
+
 };

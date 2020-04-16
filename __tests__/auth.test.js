@@ -23,35 +23,35 @@ describe('app routes', () => {
   it('signs up a user', () => {
     return request(app)
       .post('/auth/signup')
-      .send({ username: 'testUser', password: 'testPass' })
+      .send({ username: 'rex', password: 'testPass' })
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.any(String),
-          username: 'testUser',
+          username: 'rex',
           __v: 0
         });
       });
   });
 
   it('logs in a user', async() => {
-    await User.create({ username: 'testUser', password: 'testPass' });
+    await User.create({ username: 'rex', password: 'testPass' });
     return request(app)
       .post('/auth/signin')
-      .send({ username: 'testUser', password: 'testPass' })
+      .send({ username: 'rex', password: 'testPass' })
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.any(String),
-          username: 'testUser',
+          username: 'rex',
           __v: 0
         });
       });   
   });
 
   it('fails to login a user due to a bad password', async() => {
-    await User.create({ username: 'testUser', password: 'testPass' });
+    await User.create({ username: 'rex', password: 'testPass' });
     return request(app)
       .post('/auth/signin')
-      .send({ username: 'testUser', password: 'nope' })
+      .send({ username: 'rex', password: 'nope' })
       .then(res => {
         expect(res.body).toEqual({
           status: 403,
