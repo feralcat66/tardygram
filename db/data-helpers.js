@@ -29,6 +29,16 @@ beforeEach(() => {
     });
 });
 
+const user = request.agent(app);
+beforeEach(() => {
+  return user
+    .post('/api/v1/auth/login')
+    .send({
+      email: 'test@test.com',
+      password: 'password'
+    });
+});
+
 afterAll(() => {
   return mongoose.connection.close();
 });

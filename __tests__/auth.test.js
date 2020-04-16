@@ -1,50 +1,64 @@
-const { getUser, getAgent } = require('../db/data-helpers');
+require('dotenv').config();
 
 const request = require('supertest');
 const app = require('../lib/app');
+const connect = require('../lib/utils/connect');
+const mongoose = require('mongoose');
+const User = require('../lib/models/User');
 
-describe('auth routes', () => {
+describe('app routes', () => {
+  beforeAll(() => {
+    connect();
+  });
+
+  beforeEach(() => {
+    return mongoose.connection.dropDatabase();
+  });
+
+  afterAll(() => {
+    return mongoose.connection.close();
+  });
+
+
   it('signs up a user', () => {
     return request(app)
-      .post('/api/v1/auth/signup')
-      .send({
-        email: 'spot@dogs.com',
-        password: 'spotWasHere'
-      })
+      .post('/auth/signup')
+      .send({ username: 'testUser', password: 'testPass' })
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.any(String),
-          email: 'spot@dogs.com',
+          username: 'testUser',
           __v: 0
         });
       });
   });
 
   it('logs in a user', async() => {
+    await User.create({ username: 'testUser', password: 'testPass' });
     return request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'test@test.com',
-        password: 'password'
-      })
+      .post('/auth/signin')
+      .send({ username: 'testUser', password: 'testPass' })
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.any(String),
-          email: 'test@test.com',
+          username: 'testUser',
           __v: 0
+        });
+      });   
+  });
+
+  it('fails to login a user due to a bad password', async() => {
+    await User.create({ username: 'testUser', password: 'testPass' });
+    return request(app)
+      .post('/auth/signin')
+      .send({ username: 'testUser', password: 'nope' })
+      .then(res => {
+        expect(res.body).toEqual({
+          status: 403,
+          message: 'Invalid username / password'
         });
       });
   });
 
-  it('verifies a logged in user', () => {
-    return getAgent()
-      .get('/api/v1/auth/verify')
-      .then(res => {
-        expect(res.body).toEqual({
-          _id: expect.any(String),
-          email: 'test@test.com',
-          __v: 0
-        });
-      });
-  });
 });
+
