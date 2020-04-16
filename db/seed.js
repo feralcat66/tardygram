@@ -1,7 +1,7 @@
 const chance = require('chance').Chance();
 const User = require('../lib/models/User');
 const Note = require('../lib/models/Note');
-const Post = require('../lib/models/Post');
+const Post = require('../lib/models/Comment');
 
 module.exports = async({ usersToCreate = 5, notesToCreate = 30, postsToCreate = 50 } = {}) => {
   const loggedInUser = await User.create({
